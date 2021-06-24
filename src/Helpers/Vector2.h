@@ -6,41 +6,36 @@
 
 struct Vector2
 {
-	Vector2(Point begin, Point direction, int length = 0)
-		: begin(begin)
-		, direction(direction)
+	Vector2(int x = 0, int y = 0, int length = 0)
+		: x(x)
+		, y(y)
 		, length(length)
 	{}
 
-	Point GetBegin() const
+	void operator-(const Vector2& p)
 	{
-		return begin;
+		x -= p.x;
+		y -= p.y;
 	}
 
-	Point GetDirection() const
+	void operator+(const Vector2& p)
 	{
-		return direction;
+		x += p.x;
+		y += p.y;
 	}
 
-	void SetBegin(const Point& begin)
+	void operator=(const Vector2 p)
 	{
-		this->begin = begin;
-		UpdateLength();
+		x = p.x;
+		y = p.y;
 	}
 
-	void SetDirection(const Point& direction)
+	void operator=(const float& initVal)
 	{
-		this->direction = direction;
-		UpdateLength();
+		x = initVal;
+		y = initVal;
 	}
 
-	int length;
-private:
-	Point begin;
-	Point direction;
-
-	void UpdateLength()
-	{
-		length = sqrt((direction.x - begin.x) * (direction.x - begin.x) + (direction.y - begin.y) * (direction.y - begin.y));
-	}
+	float length;
+	float x, y;
 };

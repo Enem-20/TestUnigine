@@ -7,8 +7,6 @@ src/Helpers/Vector2.h
 src/Helpers/Vector2.cpp
 src/Helpers/Point.h
 src/Helpers/Point.cpp
-src/Helpers/Grid.h
-src/Helpers/Grid.cpp
 )
 
 set(GameClasses
@@ -16,13 +14,29 @@ src/GameClasses/Unit.h
 src/GameClasses/Unit.cpp
 )
 
+set(Resources
+src/Resources/ResourceManager.h
+src/Resources/ResourceManager.cpp
+)
+
+set(Components
+src/Components/Vision.h
+src/Components/Vision.cpp
+)
+
 source_group("Helpers" FILES ${Helpers})
 source_group("GameClasses" FILES ${GameClasses})
+source_group("Resources" FILES ${Resources})
+source_group("Components" FILES ${Components})
 
 add_executable(${PROJECT_NAME} 
 ${Helpers}
 
 ${GameClasses}
+
+${Resources}
+
+${Components}
 
 src/main.cpp)
 
