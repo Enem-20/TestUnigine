@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Point.h"
-
 #include <cmath>
 
 struct Vector2
@@ -12,29 +10,17 @@ struct Vector2
 		, length(length)
 	{}
 
-	void operator-(const Vector2& p)
-	{
-		x -= p.x;
-		y -= p.y;
-	}
+	void operator-(const Vector2& p);
 
-	void operator+(const Vector2& p)
-	{
-		x += p.x;
-		y += p.y;
-	}
+	void operator+(const Vector2& p);
 
-	void operator=(const Vector2 p)
-	{
-		x = p.x;
-		y = p.y;
-	}
+	void operator=(const Vector2 p);
 
-	void operator=(const float& initVal)
-	{
-		x = initVal;
-		y = initVal;
-	}
+	void operator=(const float& initVal);
+
+	bool operator==(const Vector2 v);
+
+	float Length() const;
 
 	float length;
 	float x, y;

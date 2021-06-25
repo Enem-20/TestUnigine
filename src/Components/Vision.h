@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <memory>
+#include <cmath>
 
 class Unit;
 
@@ -16,23 +17,11 @@ struct Vision
 		, owner(owner)
 	{}
 
-	void Update()
-	{
-		CheckIntersects();
-	}
+	void Update();
 
-	void CheckIntersects()
-	{
-		VisibleAgents.clear();
+	void CheckIntersects();
 
-		for (auto unit : ResourceManager::Units)
-		{
-			if (owner != unit)
-			{
-
-			}
-		}
-	}
+	void CheckIntersect(std::shared_ptr<Unit> unit);
 
 	Vector2 r;
 	float angle;

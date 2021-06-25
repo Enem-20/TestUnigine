@@ -5,8 +5,6 @@ project(TestUnigine)
 set(Helpers
 src/Helpers/Vector2.h
 src/Helpers/Vector2.cpp
-src/Helpers/Point.h
-src/Helpers/Point.cpp
 )
 
 set(GameClasses
@@ -41,6 +39,8 @@ ${Components}
 src/main.cpp)
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
+
+target_include_directories(${PROJECT_NAME} PUBLIC external/rapidjson/include)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
 
