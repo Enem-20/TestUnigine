@@ -14,6 +14,7 @@ class Unit;
 class ResourceManager
 {
 public:
+	static void UnloadAllResources();
 	static void SetExecutablePath(const std::string& executablePath);
 	static std::string getFileString(const std::string& relativeFilePath);
 

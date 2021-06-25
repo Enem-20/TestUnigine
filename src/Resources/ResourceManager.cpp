@@ -1,5 +1,7 @@
 #include "ResourceManager.h"
 #include "../GameClasses/Unit.h"
+#include "../Components/Vision.h"
+#include "Serializer.h"
 
 #include <fstream>
 #include <sstream>
@@ -12,8 +14,8 @@ void ResourceManager::loadJSONUnits(const std::string& relativePath)
 {
 	rapidjson::Document d = documentParse(relativePath);
 
-	float angle = d.FindMember("angle")->value.GetDouble();
-	float distance = d.FindMember("distance")->value.GetDouble();
+	Vision::Sector::angle = d.FindMember("angle")->value.GetDouble();
+	Vision::Sector::distance = d.FindMember("distance")->value.GetDouble();
 
 	for (const auto& unit : d.FindMember("Units")->value.GetArray())
 	{
@@ -23,7 +25,7 @@ void ResourceManager::loadJSONUnits(const std::string& relativePath)
 		loadJSONVector2(position, unit);
 		loadJSONVector2(r, unit);
 
-		Units.emplace(name, std::make_shared<Unit>(name, position, r, angle, distance));
+		Units.emplace(name, std::make_shared<Unit>(name, position, r));
 	}
 }
 
@@ -73,4 +75,13 @@ rapidjson::Document ResourceManager::documentParse(const std::string& relativePa
 	}
 
 	return d;
+}
+
+void ResourceManager::UnloadAllResources()
+{
+	std::ofstream f(m_path + "/res/SceneSerialized.json");
+
+	f << Serializer::Serialize().GetString();
+	f.close();
+	Units.clear();
 }

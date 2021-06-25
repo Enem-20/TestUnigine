@@ -5,7 +5,13 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+float Vision::Sector::angle;
+float Vision::Sector::distance;
 
+Vision::Vision(std::shared_ptr<Unit> owner, Vector2 r)
+	: r(r)
+	, owner(owner)
+{}
 
 void Vision::Update()
 {
@@ -28,11 +34,10 @@ void Vision::CheckIntersect(std::shared_ptr<Unit> unit)
 	{
 		Vector2 ownerToUnit(unit->position.x - owner->position.x, unit->position.y - owner->position.y);
 
-
 		float alpha = atan2(r.y,r.x) - atan2(ownerToUnit.y,ownerToUnit.x);
-		if (angle < 0) { angle += 2 * M_PI; }
+		if (Sector::angle < 0) { Sector::angle += 2 * M_PI; }
 		alpha *= 180 / M_PI;
-		if ((alpha <= angle / 2) && (ownerToUnit.Length() <= distance))
+		if ((alpha <= Sector::angle / 2) && (ownerToUnit.Length() <= Sector::distance))
 			VisibleAgents.push_back(unit);
 	}
 }
