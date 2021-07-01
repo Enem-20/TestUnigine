@@ -29,7 +29,7 @@ void Vision::CheckIntersects()
 	}
 }
 
-void Vision::CheckIntersect(std::shared_ptr<Unit> unit)
+void Vision::CheckIntersect(std::shared_ptr<Unit> unit)		//Отсекаем юнитов по полю зрения
 {
 	if (owner->name != unit->name)
 	{
@@ -37,9 +37,7 @@ void Vision::CheckIntersect(std::shared_ptr<Unit> unit)
 
 		double alpha = (r.x * ownerToUnit.x + r.y * ownerToUnit.y) / (r.length * ownerToUnit.length);
 		alpha = acos(alpha) * 180 / M_PI;
-		//double alpha = atan2(r.y,r.x) - atan2(ownerToUnit.y,ownerToUnit.x);
-		//if (Sector::angle < 0) { Sector::angle += 2 * M_PI; }
-		//alpha *= 180 / M_PI;
+
 		if ((alpha <= Sector::angle / 2) && (ownerToUnit.length <= Sector::distance))
 			VisibleAgents.push_back(unit);
 	}

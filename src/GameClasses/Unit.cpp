@@ -9,7 +9,7 @@ Unit::Unit(std::string name, Vector2 position, Vector2 r)
 	, name(name)
 {
 	if (this->name == "") { this->name = "unit" + std::to_string(ID); }
-	vision = std::make_shared<Vision>(std::make_shared<Unit>(*this), r);
+	vision = std::make_shared<Vision>(std::make_shared<Unit>(*this), std::move(r));
 	ResourceManager::Units.emplace("unit" + std::to_string(ID), std::make_shared<Unit>(*this));
 	Grid::GetInstance().AddUnit(std::make_shared<Unit>(*this));
 	

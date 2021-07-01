@@ -26,6 +26,12 @@ struct Vision
 
 	struct Sector
 	{
+		Sector() = delete;
+		~Sector() = delete;
+		Sector(const Sector&) = delete;
+		Sector& operator=(Sector&&) = delete;
+		Sector(Sector&&) = delete;
+
 		static float angle;
 		static float distance;
 	};

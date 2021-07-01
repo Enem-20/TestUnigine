@@ -23,7 +23,7 @@ void ResourceManager::loadJSONUnits(const std::string& relativePath)
 	{
 		std::string name = unit.FindMember("name")->value.GetString();
 
-		Unit unit(
+		Unit(
 			std::move(name), 
 			std::move(loadJSONVector2(unit, "position")), 
 			std::move(loadJSONVector2(unit, "r"))
@@ -106,7 +106,7 @@ void ResourceManager::UnloadAllResources()
 	Units.clear();
 }
 
-std::shared_ptr<Unit> ResourceManager::getUnit(std::string name)
+std::shared_ptr<Unit> ResourceManager::getUnit(const std::string& name)
 {
 	auto unit = Units.find(name);
 

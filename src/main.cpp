@@ -1,4 +1,4 @@
-//Не стал заморачиваться с юнит-тестами и обработкой исключений для тестового, но могу, если надо
+//Количество видимых юнитов я поместил внутрь объектов-юнитов при сериализации
 
 //#define DEBUG
 //#define RandomTest
@@ -60,11 +60,9 @@ int main(int argc, char** argv)
 #else
 	ResourceManager::loadJSONUnits("/res/Scene.json");
 #endif		
-
 	for (auto unit : ResourceManager::Units)
 	{
 		unit.second->GetVision()->Update();
-		std::cout << unit.second->GetVision()->VisibleAgents.size() << std::endl;
 	}
 #ifdef  DEBUG
 	std::cout << "nulls: " << nulls << std::endl;

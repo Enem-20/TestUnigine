@@ -41,7 +41,7 @@ void Grid::AddUnit(std::shared_ptr<Unit> unit)
 	UnitsInSectors[cellPos.x][cellPos.y].push_back(unit);
 }
 
-std::list<std::shared_ptr<Unit>> Grid::GetUnits(const Vector2& pos, const double& radius)
+std::list<std::shared_ptr<Unit>> Grid::GetUnits(const Vector2& pos, const double& radius)	//Обход в ширину, собирает ближайшие секторы с сетки в заданном радиусе и возвращает всех юнитов, которые могут быть обнаружены
 {
 	std::list<std::shared_ptr<Unit>> result;
 	std::queue<IVector2> q;
@@ -113,7 +113,7 @@ void Grid::Update()
 
 }
 
-const IVector2 Grid::GetCell(Vector2 pos) const 
+const IVector2 Grid::GetCell(Vector2 pos) const //Нормализуем координаты (x,y) э (-беск;+беск) в (x,y) э [0;+беск)
 {
 	return std::move(IVector2(floor((pos.x + fieldSize.x/2) / sectorSize.x), floor((pos.y + fieldSize.y/2) / sectorSize.y)));
 }
