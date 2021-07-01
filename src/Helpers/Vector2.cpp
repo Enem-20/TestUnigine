@@ -1,35 +1,46 @@
 #include "Vector2.h"
 
-void Vector2::operator-(const Vector2& p)
+Vector2 Vector2::operator-(const Vector2& p)
 {
-	x -= p.x;
-	y -= p.y;
+	Vector2 vec(x - p.x, y - p.y);
+	vec.Length();
+	return vec;
 }
 
-void Vector2::operator+(const Vector2& p)
+Vector2 Vector2::operator+(const Vector2& p)
 {
-	x += p.x;
-	y += p.y;
+	Vector2 vec(x + p.x, y + p.y);
+	vec.Length();
+	return vec;
 }
 
-void Vector2::operator=(const Vector2 p)
+Vector2 Vector2::operator*(const Vector2& p)
 {
-	x = p.x;
-	y = p.y;
+	Vector2 vec(x * p.x + y * p.y);
+	vec.Length();
+	return vec;
 }
 
-void Vector2::operator=(const float& initVal)
+Vector2 Vector2::operator=(const Vector2& p)
 {
-	x = initVal;
-	y = initVal;
+	x = p.x; y = p.y;
+	Length();
+	return *this;
 }
 
-bool Vector2::operator==(const Vector2 v)
+Vector2 Vector2::operator=(const double& initVal)
+{
+	Vector2 vec(initVal, initVal);
+	vec.Length();
+	return vec;
+}
+
+bool Vector2::operator==(const Vector2& v)
 {
 	return ((x == v.x) && (y == v.y));
 }
 
-float Vector2::Length() const
+void Vector2::Length()
 {
-	return sqrt(x * x + y * y);
+	length = sqrt(x * x + y * y);
 }

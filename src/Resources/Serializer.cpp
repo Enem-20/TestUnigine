@@ -39,6 +39,9 @@ const rapidjson::StringBuffer Serializer::Serialize()
 		writer.Double(unit.second->GetVision()->r.y);
 		writer.EndArray();
 
+		writer.Key("visible");
+		writer.Int(unit.second->GetVision()->VisibleAgents.size());
+
 		writer.EndObject();
 	}
 	writer.EndArray();

@@ -1,4 +1,12 @@
 {
+	   "fieldSize":[
+      2000.0,
+      2000.0
+   ],
+   "sectorSize":[
+      2.0,
+      2.0
+   ],
 	"angle" : 135.5,
 	"distance" : 2.0,
 	"Units" :

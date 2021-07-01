@@ -2,6 +2,7 @@
 #include "../GameClasses/Unit.h"
 #include "../Components/Vision.h"
 #include "Serializer.h"
+#include "../Helpers/Grid.h"
 
 #include <fstream>
 #include <sstream>
@@ -14,29 +15,48 @@ void ResourceManager::loadJSONUnits(const std::string& relativePath)
 {
 	rapidjson::Document d = documentParse(relativePath);
 
+	Grid::GetInstance(std::move(loadJSONVector2(d, "fieldSize")), std::move(loadJSONVector2(d, "sectorSize")));
 	Vision::Sector::angle = d.FindMember("angle")->value.GetDouble();
 	Vision::Sector::distance = d.FindMember("distance")->value.GetDouble();
 
 	for (const auto& unit : d.FindMember("Units")->value.GetArray())
 	{
 		std::string name = unit.FindMember("name")->value.GetString();
-		Vector2 position;
-		Vector2 r;
-		loadJSONVector2(position, unit);
-		loadJSONVector2(r, unit);
 
-		Units.emplace(name, std::make_shared<Unit>(name, position, r));
+		Unit unit(
+			std::move(name), 
+			std::move(loadJSONVector2(unit, "position")), 
+			std::move(loadJSONVector2(unit, "r"))
+		);
 	}
 }
 
-void ResourceManager::loadJSONVector2(Vector2& vec, const rapidjson::Value& val)
+Vector2 ResourceManager::loadJSONVector2(const rapidjson::Value& val, std::string name)
 {
 	size_t i = 0;
-	for (const auto& arg : val.FindMember("position")->value.GetArray())
+	float x = 0.f;
+	float y = 0.f;
+	for (const auto& arg : val.FindMember(name.c_str())->value.GetArray())
 	{
-		((i % 2) == 0) ? vec.x = arg.GetDouble() : vec.y = arg.GetDouble();
+		((i % 2) == 0) ? x = arg.GetDouble() : y = arg.GetDouble();
 		++i;
 	}
+
+	return std::move(Vector2(x,y));
+}
+
+Vector2 ResourceManager::loadJSONVector2(const rapidjson::Document& val, std::string name)
+{
+	size_t i = 0;
+	float x = 0.f;
+	float y = 0.f;
+	for (const auto& arg : val.FindMember(name.c_str())->value.GetArray())
+	{
+		((i % 2) == 0) ? x = arg.GetDouble() : y = arg.GetDouble();
+		++i;
+	}
+
+	return std::move(Vector2(x, y));
 }
 
 void ResourceManager::SetExecutablePath(const std::string& executablePath)
@@ -84,4 +104,16 @@ void ResourceManager::UnloadAllResources()
 	f << Serializer::Serialize().GetString();
 	f.close();
 	Units.clear();
+}
+
+std::shared_ptr<Unit> ResourceManager::getUnit(std::string name)
+{
+	auto unit = Units.find(name);
+
+	if (unit != Units.end())
+	{
+		return unit->second;
+	}
+
+	return nullptr;
 }

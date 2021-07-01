@@ -5,6 +5,10 @@ project(TestUnigine)
 set(Helpers
 src/Helpers/Vector2.h
 src/Helpers/Vector2.cpp
+src/Helpers/IVector2.h
+src/Helpers/IVector2.cpp
+src/Helpers/Grid.h
+src/Helpers/Grid.cpp
 )
 
 set(GameClasses

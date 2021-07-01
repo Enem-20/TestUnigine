@@ -12,6 +12,18 @@ struct Vision
 {
 	Vision(std::shared_ptr<Unit> owner, Vector2 r = 0.f);
 
+	Vision(Vision&& vision) noexcept
+		: r(std::move(vision.r))
+		, VisibleAgents(std::move(vision.VisibleAgents))
+		, owner(std::move(vision.owner))
+	{}
+
+	Vision(const Vision& vision)
+		: r(vision.r)
+		, VisibleAgents(vision.VisibleAgents)
+		, owner(vision.owner)
+	{}
+
 	struct Sector
 	{
 		static float angle;

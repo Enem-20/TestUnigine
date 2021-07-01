@@ -9,17 +9,25 @@
 class Unit
 {
 public:
-	Unit(std::string name = "", Vector2 position = 0, Vector2 r = 0)
-		: position(position)
-		, name(name)
-	{
-		vision = std::make_shared<Vision>(std::make_shared<Unit>(*this), r);
-	}
+	Unit(std::string name = "", Vector2 position = 0, Vector2 r = 0);
+
+	Unit(Unit&& unit) noexcept
+		: position(std::move(unit.position))
+		, name(std::move(unit.name))
+		, vision(std::move(unit.vision))
+	{}
+
+	Unit(const Unit& unit)
+		: position(unit.position)
+		, name(unit.name)
+		, vision(unit.vision)
+	{}
 
 	const std::shared_ptr<Vision> GetVision() const;
 
 	Vector2 position;
 	std::string name;
 private:
+	static size_t ID;
 	std::shared_ptr<Vision> vision;
 };

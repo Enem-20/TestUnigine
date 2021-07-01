@@ -4,24 +4,59 @@
 
 struct Vector2
 {
-	Vector2(int x = 0, int y = 0, int length = 0)
+	Vector2(double x = 0, double y = 0, double length = 0)
 		: x(x)
 		, y(y)
 		, length(length)
+	{
+		Length();
+	}
+
+	Vector2(const Vector2& vec)
+		: x(vec.x)
+		, y(vec.y)
+		, length(vec.length)
 	{}
 
-	void operator-(const Vector2& p);
+	Vector2(Vector2&& vec) noexcept
+		: x(std::move(vec.x))
+		, y(std::move(vec.y))
+		, length(std::move(vec.length))
+	{}
 
-	void operator+(const Vector2& p);
+	Vector2 operator-(const Vector2& p);
 
-	void operator=(const Vector2 p);
+	Vector2 operator+(const Vector2& p);
 
-	void operator=(const float& initVal);
+	Vector2 operator*(const Vector2& p);
 
-	bool operator==(const Vector2 v);
+	friend Vector2 operator/(const Vector2& a, const Vector2& p)
+	{
+		Vector2 vec(a.x / p.x + a.y / p.y);
+		vec.Length();
+		return vec;
+	}
 
-	float Length() const;
+	friend Vector2 operator%(const Vector2& a, const Vector2& p)
+	{
+		Vector2 vec((int)a.x % (int)p.x + (int)a.y % (int)p.y);
+		vec.Length();
+		return vec;
+	}
 
-	float length;
-	float x, y;
+	Vector2 operator=(const Vector2& p);
+
+	Vector2 operator=(const double& initVal);
+
+	bool operator==(const Vector2& v);
+
+	friend bool operator==(const Vector2& a, const Vector2& b)
+	{
+		return (a.x == b.x) && (a.y == b.y);
+	}
+
+	double length;
+	double x, y;
+private:
+	void Length();
 };
