@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../Helpers/Vector2.h"
-
 #include <memory>
 #include <vector>
 #include <unordered_map>
@@ -10,6 +8,7 @@
 #include <rapidjson/document.h>
 
 class Unit;
+struct Vector2;
 
 class ResourceManager
 {

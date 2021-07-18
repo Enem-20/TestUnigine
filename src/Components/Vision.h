@@ -40,9 +40,9 @@ struct Vision
 
 	void CheckIntersects();
 
-	void CheckIntersect(std::shared_ptr<Unit> unit);
+	void CheckIntersect(Unit& unit);
 
 	Vector2 r;
-	std::vector<std::shared_ptr<Unit>> VisibleAgents;
+	std::vector<Unit> VisibleAgents;
 	std::shared_ptr<Unit> owner;
 };

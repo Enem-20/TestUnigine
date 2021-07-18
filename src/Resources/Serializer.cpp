@@ -35,23 +35,11 @@ void Serializer::SerializeUnits(rapidjson::PrettyWriter<rapidjson::StringBuffer>
 		writer.Key("name");
 		writer.String(unit.second->name.c_str());
 
-		//writer.Key("position");
-		//writer.StartArray();
-		//writer.Double(unit.second->position.x);
-		//writer.Double(unit.second->position.y);
-		//writer.EndArray();
-
-		//writer.Key("r");
-		//writer.StartArray();
-		//writer.Double(unit.second->GetVision()->r.x);
-		//writer.Double(unit.second->GetVision()->r.y);
-		//writer.EndArray();
-
 		SerializeVector2(writer, "position", unit.second->position);
-		SerializeVector2(writer, "r", unit.second->GetVision()->r);
+		SerializeVector2(writer, "r", unit.second->GetVision().r);
 
 		writer.Key("visible");
-		writer.Int(unit.second->GetVision()->VisibleAgents.size());
+		writer.Int(unit.second->GetVision().VisibleAgents.size());
 
 		writer.EndObject();
 	}

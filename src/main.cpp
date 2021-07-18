@@ -1,19 +1,23 @@
 //Количество видимых юнитов я поместил внутрь объектов-юнитов при сериализации
 
 //#define DEBUG
-//#define RandomTest
+#define RandomTest
 
+#include "Components/Vision.h"
 #include "GameClasses/Unit.h"
 #include "Helpers/Vector2.h"
 #include "Resources/ResourceManager.h"
 #include "Helpers/Grid.h"
+#include "Resources/ThreadPool.h"
 
 #include <iostream>
 #include <memory>
+#include <chrono>
+#include <functional>
+#include <ppl.h>
 
 #ifdef RandomTest
 
-#include <random>
 #include <ctime>
 #include <string>
 #include <chrono>
@@ -42,7 +46,7 @@ void Randomize()
 		double posY2 = sign4 ? rand() % 5000 * -1 : rand() % 5000;
 		Vector2 r(std::move(posX2), std::move(posY2));
 
-		Unit unit("", std::move(position), std::move(r));
+		Unit("", std::move(position), std::move(r));
 	}
 }
 #endif
@@ -52,24 +56,39 @@ int main(int argc, char** argv)
 	ResourceManager::SetExecutablePath(argv[0]);
 
 #ifdef RandomTest
-	auto start1 = std::chrono::high_resolution_clock::now();
+	//auto start1 = std::chrono::high_resolution_clock::now();
 	Randomize();
-	auto end1 = std::chrono::high_resolution_clock::now();
+	//auto end1 = std::chrono::high_resolution_clock::now();
 
-	std::cout << std::chrono::duration<float>(end1 - start1) << std::endl;
+	//std::cout << "Random time: " << std::chrono::duration<double>(end1 - start1) << std::endl;
 #else
 	ResourceManager::loadJSONUnits("/res/Scene.json");
 #endif		
-	for (auto unit : ResourceManager::Units)
-	{
-		unit.second->GetVision()->Update();
-	}
+	//size_t nulls = 0;
+	//size_t ones = 0;
+
+	//auto start = std::chrono::high_resolution_clock::now();
+	concurrency::parallel_for_each(ResourceManager::Units.begin(),
+		ResourceManager::Units.end(),
+			[&](auto& unit) 
+			{
+				unit.second->GetVision().Update();
+				//unit.second->GetVision().VisibleAgents.size() ? ++ones : ++nulls;
+				//std::cout << unit.second->GetVision().VisibleAgents.size() << std::endl;
+			}
+	);
+	//auto end = std::chrono::high_resolution_clock::now();
+ // 
+
+	//std::cout << std::chrono::duration<double>(end - start).count() << std::endl;
 #ifdef  DEBUG
 	std::cout << "nulls: " << nulls << std::endl;
 	std::cout << "ones: " << ones << std::endl;
 	std::cout << "distance: " << Vision::Sector::distance << std::endl;
 	std::cout << "angle: " << Vision::Sector::angle << std::endl;
 #endif //  DEBUG
+
+	
 
 	ResourceManager::UnloadAllResources();
 	system("pause");

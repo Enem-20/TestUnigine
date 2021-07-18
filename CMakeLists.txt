@@ -21,6 +21,8 @@ src/Resources/ResourceManager.h
 src/Resources/ResourceManager.cpp
 src/Resources/Serializer.h
 src/Resources/Serializer.cpp
+src/Resources/ThreadPool.h
+src/Resources/ThreadPool.cpp
 )
 
 set(Components

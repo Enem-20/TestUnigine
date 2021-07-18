@@ -1,6 +1,5 @@
 #include "Grid.h"
 
-#include <queue>
 #include <array>
 #include <iostream>
 
@@ -24,9 +23,9 @@ Grid::Grid(Grid&& grid) noexcept
 {}
 
 Grid::Grid(const Grid& grid)
-	: sectorSize(std::move(grid.sectorSize))
-	, fieldSize(std::move(grid.fieldSize))
-	, UnitsInSectors(std::move(grid.UnitsInSectors))
+	: sectorSize(grid.sectorSize)
+	, fieldSize(grid.fieldSize)
+	, UnitsInSectors(grid.UnitsInSectors)
 {}
 
 Grid& Grid::GetInstance(Vector2 fieldSize, Vector2 SectorSize)
@@ -35,24 +34,14 @@ Grid& Grid::GetInstance(Vector2 fieldSize, Vector2 SectorSize)
 	return grid;
 }
 
-void Grid::AddUnit(std::shared_ptr<Unit> unit)
+void Grid::AddUnit(Unit& unit)
 {
-	IVector2 cellPos(GetCell(unit->position));
+	IVector2 cellPos(GetCell(unit.position));
 	UnitsInSectors[cellPos.x][cellPos.y].push_back(unit);
 }
 
-std::list<std::shared_ptr<Unit>> Grid::GetUnits(const Vector2& pos, const double& radius)	//Обход в ширину, собирает ближайшие секторы с сетки в заданном радиусе и возвращает всех юнитов, которые могут быть обнаружены
+void Grid::GetUnits(const Vector2& pos, const double& radius, std::list<Unit>& result, std::vector<std::vector<bool>>& visited, std::queue<IVector2>& q)	//Обход в ширину, собирает ближайшие секторы с сетки в заданном радиусе и возвращает всех юнитов, которые могут быть обнаружены
 {
-	std::list<std::shared_ptr<Unit>> result;
-	std::queue<IVector2> q;
-
-	std::vector<std::vector<bool>> visited;
-	visited.resize(fieldSize.x / sectorSize.x);
-	for (auto& it : visited)
-	{
-		it.resize(fieldSize.y / sectorSize.y);
-	}
-
 	q.push(GetCell(pos));
 	visited[q.front().x][q.front().y] = true;
 	result.insert(result.end(), GetInstance().UnitsInSectors[q.front().x][q.front().y].begin(), GetInstance().UnitsInSectors[q.front().x][q.front().y].end());
@@ -84,8 +73,14 @@ std::list<std::shared_ptr<Unit>> Grid::GetUnits(const Vector2& pos, const double
 		}
 		q.pop();
 	}
+	//std::cout << sizeof(UnitsInSectors) * UnitsInSectors.size() * UnitsInSectors.size() << std::endl;
+}
 
-	return result;
+void Grid::GetUnitsFromCell(std::list<std::shared_ptr<Unit>>& result, IVector2& pos)
+{
+
+
+
 }
 
 bool Grid::CheckMaxBorder(const int& CheckPos, const int& UnitPos, const double& radius)
@@ -113,7 +108,7 @@ void Grid::Update()
 
 }
 
-const IVector2 Grid::GetCell(Vector2 pos) const //Нормализуем координаты (x,y) э (-беск;+беск) в (x,y) э [0;+беск)
+const IVector2 Grid::GetCell(const Vector2& pos) const //Нормализуем координаты (x,y) э (-беск;+беск) в (x,y) э [0;+беск)
 {
 	return std::move(IVector2(floor((pos.x + fieldSize.x/2) / sectorSize.x), floor((pos.y + fieldSize.y/2) / sectorSize.y)));
 }

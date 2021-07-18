@@ -3,6 +3,7 @@
 #include "../Components/Vision.h"
 #include "Serializer.h"
 #include "../Helpers/Grid.h"
+#include "../Helpers/Vector2.h"
 
 #include <fstream>
 #include <sstream>
