@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Helpers/Vector2.h"
+#include "../Helpers/IVector2.h"
 #include "../Resources/ResourceManager.h"
 //#include "../Components/Vision.h"
 
@@ -18,6 +19,7 @@ public:
 	Unit(const Unit& unit);
 
 	Vision& GetVision();
+	const IVector2& GetCellPosition();
 
 	Vector2 position;
 	std::string name;	

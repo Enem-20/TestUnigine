@@ -39,7 +39,7 @@ void Serializer::SerializeUnits(rapidjson::PrettyWriter<rapidjson::StringBuffer>
 		SerializeVector2(writer, "r", unit.second->GetVision().r);
 
 		writer.Key("visible");
-		writer.Int(unit.second->GetVision().VisibleAgents.size());
+		writer.Int(unit.second->GetVision().countVisibleAgents);
 
 		writer.EndObject();
 	}

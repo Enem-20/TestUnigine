@@ -2,18 +2,12 @@
 
 #include <array>
 #include <iostream>
+#include <span>
 
 Grid::Grid(Vector2& fieldSize, Vector2& sectorSize)
 {
 	this->fieldSize = std::move(fieldSize);
 	this->sectorSize = std::move(sectorSize);
-
-	UnitsInSectors.resize(fieldSize.x / sectorSize.x);
-
-	for (size_t i = 0; i < UnitsInSectors.size(); ++i)
-	{
-		UnitsInSectors[i].resize(fieldSize.y / sectorSize.y);
-	}
 }
 
 Grid::Grid(Grid&& grid) noexcept
@@ -37,60 +31,77 @@ Grid& Grid::GetInstance(Vector2 fieldSize, Vector2 SectorSize)
 void Grid::AddUnit(Unit& unit)
 {
 	IVector2 cellPos(GetCell(unit.position));
-	UnitsInSectors[cellPos.x][cellPos.y].push_back(unit);
+	UnitsInSectors.emplace(std::move(cellPos), &unit);
 }
 
-void Grid::GetUnits(const Vector2& pos, const double& radius, std::list<Unit>& result, std::vector<std::vector<bool>>& visited, std::queue<IVector2>& q)	//Обход в ширину, собирает ближайшие секторы с сетки в заданном радиусе и возвращает всех юнитов, которые могут быть обнаружены
+void Grid::GetUnits(const Vector2& pos, const double& radius, std::vector<Unit*>& result, std::unordered_map<IVector2, bool, IVector2Hash>& visited, std::queue<IVector2>& q, IVector2& checkVisited)	//Обход в ширину, собирает ближайшие секторы с сетки в заданном радиусе и возвращает всех юнитов, которые могут быть обнаружены
 {
+	//size_t count_visited = 0;
 	q.push(GetCell(pos));
-	visited[q.front().x][q.front().y] = true;
-	result.insert(result.end(), GetInstance().UnitsInSectors[q.front().x][q.front().y].begin(), GetInstance().UnitsInSectors[q.front().x][q.front().y].end());
+	visited.emplace(q.front(), true);
+	GetUnitsFromCell(result, q.front());
 	while (!q.empty())
 	{
-		if (CheckMaxBorder(q.front().x, GetCell(pos).x, radius) && (!visited[q.front().x + 1][q.front().y]))
+		checkVisited = std::move(IVector2(q.front().x + 1, q.front().y));
+		if (CheckMaxBorder(q.front().x, GetCell(pos).x, radius) && (visited.find(checkVisited) == visited.end()))
 		{
-			visited[q.front().x + 1][q.front().y] = true;
-			q.push(IVector2(q.front().x + 1, q.front().y));
-			result.insert(result.end(), GetInstance().UnitsInSectors[q.front().x + 1][q.front().y].begin(), GetInstance().UnitsInSectors[q.front().x + 1][q.front().y].end());
+			//++count_visited;
+			visited.emplace(checkVisited, true);
+			q.push(checkVisited); 
+			GetUnitsFromCell(result, checkVisited);
 		}
-		if (CheckMinBorder(q.front().x, GetCell(pos).x, radius) && (!visited[q.front().x - 1][q.front().y]))
+		checkVisited = std::move(IVector2(q.front().x - 1, q.front().y));
+		if (CheckMinBorder(q.front().x, GetCell(pos).x, radius) && (visited.find(checkVisited) == visited.end()))
 		{
-			visited[q.front().x - 1][q.front().y] = true;
-			q.push(IVector2(q.front().x - 1, q.front().y));
-			result.insert(result.end(), GetInstance().UnitsInSectors[q.front().x - 1][q.front().y].begin(), GetInstance().UnitsInSectors[q.front().x - 1][q.front().y].end());
+			//++count_visited;
+			visited.emplace(checkVisited, true);
+			q.push(checkVisited);
+			GetUnitsFromCell(result, checkVisited);
 		}
-		if (CheckMaxBorder(q.front().y, GetCell(pos).y, radius) && (!visited[q.front().x][q.front().y+1]))
+		checkVisited = std::move(IVector2(q.front().x, q.front().y + 1));
+		if (CheckMaxBorder(q.front().y, GetCell(pos).y, radius) && (visited.find(checkVisited) == visited.end()))
 		{
-			visited[q.front().x][q.front().y + 1] = true;
-			q.push(IVector2(q.front().x, q.front().y+1));
-			result.insert(result.end(), GetInstance().UnitsInSectors[q.front().x][q.front().y + 1].begin(), GetInstance().UnitsInSectors[q.front().x][q.front().y + 1].end());
+			//++count_visited;
+			visited.emplace(checkVisited, true);
+			q.push(checkVisited);
+			GetUnitsFromCell(result, checkVisited);
 		}
-		if (CheckMinBorder(q.front().y, GetCell(pos).y, radius) && (!visited[q.front().x][q.front().y - 1]))
+		checkVisited = std::move(IVector2(q.front().x, q.front().y - 1));
+		if (CheckMinBorder(q.front().y, GetCell(pos).y, radius) && (visited.find(checkVisited) == visited.end()))
 		{
-			visited[q.front().x][q.front().y - 1] = true;
-			q.push(IVector2(q.front().x, q.front().y-1));
-			result.insert(result.end(), GetInstance().UnitsInSectors[q.front().x][q.front().y - 1].begin(), GetInstance().UnitsInSectors[q.front().x][q.front().y - 1].end());
+			//++count_visited;
+			visited.emplace(checkVisited, true);
+			q.push(checkVisited);
+			GetUnitsFromCell(result, checkVisited);
 		}
 		q.pop();
 	}
-	//std::cout << sizeof(UnitsInSectors) * UnitsInSectors.size() * UnitsInSectors.size() << std::endl;
+	//std::cout << count_visited << std::endl;
 }
 
-void Grid::GetUnitsFromCell(std::list<std::shared_ptr<Unit>>& result, IVector2& pos)
+void Grid::GetUnitsFromCell(std::vector<Unit*>& result,const IVector2& pos)
 {
+	auto cell = UnitsInSectors.equal_range(pos);
 
+	//size_t units_count = 0;
 
-
+	if (cell.first != UnitsInSectors.end())
+	{
+		for(auto unit = cell.first; unit != cell.second; ++unit)
+		result.push_back(unit->second);
+		//++units_count;
+	}	
+	//std::cout << sizeof(cell) * units_count << std::endl;
 }
 
-bool Grid::CheckMaxBorder(const int& CheckPos, const int& UnitPos, const double& radius)
+const bool Grid::CheckMaxBorder(const int& CheckPos, const int& UnitPos, const double& radius) const
 {
-	return ((CheckPos + 1) <= (UnitPos + radius)) && ((CheckPos + 1) < (fieldSize.x / sectorSize.x));
+	return ((CheckPos + 1)/* * sectorSize.x*/ <= ((UnitPos + radius) / sectorSize.x)) && ((CheckPos + 1) < (fieldSize.x / sectorSize.x));
 }
 
-bool Grid::CheckMinBorder(const int& CheckPos, const int& UnitPos, const double& radius)
+const bool Grid::CheckMinBorder(const int& CheckPos, const int& UnitPos, const double& radius) const
 {
-	return ((CheckPos - 1) >= (UnitPos - radius)) && ((CheckPos - 1) >= 0);
+	return ((CheckPos - 1)/* * sectorSize.x*/ >= ((UnitPos - radius) / sectorSize.x)) && ((CheckPos - 1) >= 0);
 }
  
 void Grid::Search(Vector2& pos, Vector2& radius)

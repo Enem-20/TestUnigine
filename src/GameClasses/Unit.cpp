@@ -39,3 +39,9 @@ Vision& Unit::GetVision()
 {
 	return *vision;
 }
+
+const IVector2& Unit::GetCellPosition()
+{
+	auto gr = Grid::GetInstance();
+	return gr.GetCell(position);
+}

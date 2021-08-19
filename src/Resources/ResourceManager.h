@@ -19,6 +19,7 @@ public:
 	ResourceManager& operator=(ResourceManager&&) = delete;
 	ResourceManager(ResourceManager&&) = delete;
 
+	static void init();
 	static void UnloadAllResources();
 	static void SetExecutablePath(const std::string& executablePath);
 	static std::string getFileString(const std::string& relativeFilePath);
@@ -31,6 +32,11 @@ public:
 
 	typedef std::unordered_map<std::string, std::shared_ptr<Unit>> UnitsPool;
 	static UnitsPool Units;
+
+	static const size_t GetL1BlockSize();
 private:
+	static void CalcL1BlockSize();
+	static size_t L1BlockSize;
+	static size_t L1CacheSize;//in bytes. now size for pentium 4
 	static std::string m_path;
 };

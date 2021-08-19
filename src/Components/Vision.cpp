@@ -15,10 +15,22 @@
 float Vision::Sector::angle;
 float Vision::Sector::distance;
 
+//class IVector2Hash
+//{
+//public:
+//	std::size_t operator()(const IVector2& c) const
+//	{
+//		return  std::hash<std::string>()(std::to_string(size_t(c.x + c.y) % 10000));
+//	}
+//};
+
 Vision::Vision(std::shared_ptr<Unit> owner, Vector2 r)
 	: r(std::move(r))
 	, owner(owner)
-{}
+{
+	CalcL1BlockSize();
+	result.reserve(9000);
+}
 
 void Vision::Update()
 {
@@ -27,28 +39,41 @@ void Vision::Update()
 
 void Vision::CheckIntersects()
 {
-	VisibleAgents.clear();
+	countVisibleAgents = 0;
 
-	std::list<Unit> result;
-	std::vector<std::vector<bool>> visited;
+	std::unordered_map<IVector2, bool, IVector2Hash> visited;
 	std::queue<IVector2> q;
-	static size_t visited_size = Grid::GetInstance().fieldSize.x / Grid::GetInstance().sectorSize.x;
-	visited.resize(visited_size);
-	for (auto& it : visited)
+	IVector2 checkVisited;
+
+	result.clear();
+	Grid::GetInstance().GetUnits(owner->position, Sector::distance, result, visited, q, checkVisited);
+
+	const size_t size = result.size() / GetL1BlockSize();
+	const size_t end_size = result.size() % GetL1BlockSize();
+
+	for (size_t i = 0; i < size; ++i)
 	{
-		it.resize(visited_size);
+		auto bias = result.begin();
+		std::advance(bias, GetL1BlockSize() * i);
+
+		auto unit = result.begin();
+		if (i) { std::advance(unit, (GetL1BlockSize() * (i - 1)) + 1); }
+
+		for (; unit != bias; ++unit)
+		{
+			CheckIntersect(**unit);
+		}
 	}
 
-	
-	Grid::GetInstance().GetUnits(owner->position, Sector::distance, result, visited, q);
-
-
-	for (auto& unit : result)
+	if (end_size)
 	{
-		//auto start = std::chrono::high_resolution_clock::now();
-		CheckIntersect(unit);	
-		//auto end = std::chrono::high_resolution_clock::now();
-		//std::cout << std::chrono::duration<double>(end - start).count() << std::endl;
+		auto unit = result.begin();
+		std::advance(unit, size * GetL1BlockSize() + 1);
+
+		for (; unit != result.end(); ++unit)
+		{
+			CheckIntersect(**unit);
+		}
 	}
 }
 
@@ -62,6 +87,16 @@ void Vision::CheckIntersect(Unit& unit)		//Отсекаем юнитов по полю зрения
 		alpha = acos(alpha) * 180 / M_PI;
 
 		if ((alpha <= Sector::angle / 2) && (ownerToUnit.length <= Sector::distance))
-			VisibleAgents.push_back(unit);
+			++countVisibleAgents;
 	}
+}
+
+void Vision::CalcL1BlockSize()
+{
+	L1BlockSize = L1CacheSize / sizeof(result);
+}
+
+const size_t Vision::GetL1BlockSize() const
+{
+	return L1BlockSize;
 }

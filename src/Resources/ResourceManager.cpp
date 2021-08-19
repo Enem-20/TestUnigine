@@ -11,6 +11,13 @@
 
 ResourceManager::UnitsPool ResourceManager::Units;
 std::string ResourceManager::m_path;
+size_t ResourceManager::L1BlockSize;
+size_t ResourceManager::L1CacheSize = 393216;
+
+void ResourceManager::init()
+{
+	CalcL1BlockSize();
+}
 
 void ResourceManager::loadJSONUnits(const std::string& relativePath)
 {
@@ -117,4 +124,14 @@ std::shared_ptr<Unit> ResourceManager::getUnit(const std::string& name)
 	}
 
 	return nullptr;
+}
+
+void ResourceManager::CalcL1BlockSize()
+{
+	L1BlockSize = L1CacheSize / sizeof(Units);
+}
+
+const size_t ResourceManager::GetL1BlockSize()
+{
+	return L1BlockSize;
 }

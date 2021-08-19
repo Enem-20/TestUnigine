@@ -26,6 +26,9 @@ IVector2 IVector2::operator*(const IVector2& p)
 IVector2 IVector2::operator=(const IVector2& p)
 {
 	IVector2 vec(p.x, p.y);
+	x = p.x;
+	y = p.y;
+	Length();
 	vec.Length();
 	return vec;
 }

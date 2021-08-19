@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <cmath>
+#include <list>
 
 class Unit;
 
@@ -14,13 +15,13 @@ struct Vision
 
 	Vision(Vision&& vision) noexcept
 		: r(std::move(vision.r))
-		, VisibleAgents(std::move(vision.VisibleAgents))
+		, countVisibleAgents(std::move(vision.countVisibleAgents))
 		, owner(std::move(vision.owner))
 	{}
 
 	Vision(const Vision& vision)
 		: r(vision.r)
-		, VisibleAgents(vision.VisibleAgents)
+		, countVisibleAgents(vision.countVisibleAgents)
 		, owner(vision.owner)
 	{}
 
@@ -43,6 +44,13 @@ struct Vision
 	void CheckIntersect(Unit& unit);
 
 	Vector2 r;
-	std::vector<Unit> VisibleAgents;
+	size_t countVisibleAgents;
 	std::shared_ptr<Unit> owner;
+
+	const size_t GetL1BlockSize() const;
+private:
+	void CalcL1BlockSize();
+	size_t L1BlockSize;
+	const size_t L1CacheSize = 389120;//in bytes. now size for pentium 4
+	std::vector<Unit*> result;
 };

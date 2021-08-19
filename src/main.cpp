@@ -1,6 +1,6 @@
 //Количество видимых юнитов я поместил внутрь объектов-юнитов при сериализации
 
-//#define DEBUG
+#define DEBUG
 #define RandomTest
 
 #include "Components/Vision.h"
@@ -28,8 +28,8 @@
 void Randomize()
 {
 	srand(time(NULL));
-	Vision::Sector::angle = rand() % 361 + 1;
-	Vision::Sector::distance = rand() % 200 + 1;
+	Vision::Sector::angle = 360/*rand() % 360 + 1*/;
+	Vision::Sector::distance = 0/*rand() % 50 + 1*/;
 
 
 	Grid::GetInstance(std::move(Vector2(10000.f, 10000.f)), std::move(Vector2(100.f, 100.f)));
@@ -48,6 +48,7 @@ void Randomize()
 
 		Unit("", std::move(position), std::move(r));
 	}
+	std::cout << sizeof(Grid::GetInstance().UnitsInSectors)/* * Grid::GetInstance().UnitsInSectors.size()*/ << std::endl;
 }
 #endif
 
@@ -64,26 +65,61 @@ int main(int argc, char** argv)
 #else
 	ResourceManager::loadJSONUnits("/res/Scene.json");
 #endif		
-	//size_t nulls = 0;
-	//size_t ones = 0;
+	size_t nulls = 0;	
+	size_t ones = 0;
 
-	//auto start = std::chrono::high_resolution_clock::now();
-	concurrency::parallel_for_each(ResourceManager::Units.begin(),
+	ResourceManager::init();
+
+	auto start = std::chrono::high_resolution_clock::now();
+	/*concurrency::parallel_for_each(ResourceManager::Units.begin(),
 		ResourceManager::Units.end(),
 			[&](auto& unit) 
 			{
 				unit.second->GetVision().Update();
-				//unit.second->GetVision().VisibleAgents.size() ? ++ones : ++nulls;
-				//std::cout << unit.second->GetVision().VisibleAgents.size() << std::endl;
 			}
-	);
-	//auto end = std::chrono::high_resolution_clock::now();
- // 
+	);*/
 
-	//std::cout << std::chrono::duration<double>(end - start).count() << std::endl;
+	for (auto& unit : ResourceManager::Units)
+	{
+		unit.second->GetVision().Update();
+	}
+
+	//size_t size = ResourceManager::Units.size() / ResourceManager::GetL1BlockSize();
+	//size_t end_size = ResourceManager::Units.size() % ResourceManager::GetL1BlockSize();
+
+	//for (size_t i = 0; i < size; ++i)
+	//{
+	//	auto bias = ResourceManager::Units.begin();
+	//	std::advance(bias, ResourceManager::GetL1BlockSize() * i);
+
+	//	auto unit = ResourceManager::Units.begin();
+	//	if (i) { std::advance(unit, (ResourceManager::GetL1BlockSize() * (i - 1)) + 1); }
+
+	//	for (; unit != bias; ++unit)
+	//	{
+	//		unit->second->GetVision().Update();
+	//		unit->second->GetVision().VisibleAgents.size() ? ++ones : ++nulls;
+	//	}
+	//}
+
+	//if (end_size)
+	//{
+	//	auto unit = ResourceManager::Units.begin();
+	//	std::advance(unit, size * ResourceManager::GetL1BlockSize() + 1);
+
+	//	for (; unit != ResourceManager::Units.end(); ++unit)
+	//	{
+	//		unit->second->GetVision().Update();
+	//		unit->second->GetVision().VisibleAgents.size() ? ++ones : ++nulls;
+	//	}
+	//}
+
+	auto end = std::chrono::high_resolution_clock::now();
+
+	std::cout << std::chrono::duration<double>(end - start).count() << std::endl;
 #ifdef  DEBUG
-	std::cout << "nulls: " << nulls << std::endl;
-	std::cout << "ones: " << ones << std::endl;
+	//std::cout << "nulls: " << nulls << std::endl;
+	//std::cout << "ones: " << ones << std::endl;
 	std::cout << "distance: " << Vision::Sector::distance << std::endl;
 	std::cout << "angle: " << Vision::Sector::angle << std::endl;
 #endif //  DEBUG
