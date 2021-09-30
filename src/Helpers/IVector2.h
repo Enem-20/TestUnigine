@@ -35,8 +35,10 @@ public:
 		return (a.x == b.x) && (a.y == b.y);
 	}
 
+	//char m;
 	int length;
 	int x, y;
+	//double t;
 private:
 	void Length();
 };

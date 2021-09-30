@@ -1,8 +1,14 @@
 #include "Grid.h"
+#include "../Components/Vision.h"
 
-#include <array>
+#define _USE_MATH_DEFINES
+
+#include <math.h>
 #include <iostream>
 #include <span>
+#include <chrono>
+#include <ppl.h>
+#include <intrin.h>
 
 Grid::Grid(Vector2& fieldSize, Vector2& sectorSize)
 {
@@ -34,76 +40,91 @@ void Grid::AddUnit(Unit& unit)
 	UnitsInSectors.emplace(std::move(cellPos), &unit);
 }
 
-void Grid::GetUnits(const Vector2& pos, const double& radius, std::vector<Unit*>& result, std::unordered_map<IVector2, bool, IVector2Hash>& visited, std::queue<IVector2>& q, IVector2& checkVisited)	//Обход в ширину, собирает ближайшие секторы с сетки в заданном радиусе и возвращает всех юнитов, которые могут быть обнаружены
+void Grid::GetFromRadius(Unit& unit, IVector2& checkVisited, std::queue<IVector2, std::list<IVector2>>& q, std::unordered_map<IVector2, bool, IVector2Hash>& visited)
 {
-	//size_t count_visited = 0;
-	q.push(GetCell(pos));
+	//visited.clear();
+	q.push(GetCell(unit.position));
 	visited.emplace(q.front(), true);
-	GetUnitsFromCell(result, q.front());
+	GetUnitIntersects(unit, q.front());
+
 	while (!q.empty())
 	{
 		checkVisited = std::move(IVector2(q.front().x + 1, q.front().y));
-		if (CheckMaxBorder(q.front().x, GetCell(pos).x, radius) && (visited.find(checkVisited) == visited.end()))
+		if (CheckMaxBorder(q.front().x, GetCell(unit.position).x, Vision::Sector::distance) && !visited.contains(checkVisited))
 		{
-			//++count_visited;
 			visited.emplace(checkVisited, true);
-			q.push(checkVisited); 
-			GetUnitsFromCell(result, checkVisited);
+			q.push(checkVisited);
+			GetUnitIntersects(unit, checkVisited);
 		}
 		checkVisited = std::move(IVector2(q.front().x - 1, q.front().y));
-		if (CheckMinBorder(q.front().x, GetCell(pos).x, radius) && (visited.find(checkVisited) == visited.end()))
+		if (CheckMinBorder(q.front().x, GetCell(unit.position).x, Vision::Sector::distance) && !visited.contains(checkVisited))
 		{
-			//++count_visited;
 			visited.emplace(checkVisited, true);
 			q.push(checkVisited);
-			GetUnitsFromCell(result, checkVisited);
+			GetUnitIntersects(unit, checkVisited);
 		}
 		checkVisited = std::move(IVector2(q.front().x, q.front().y + 1));
-		if (CheckMaxBorder(q.front().y, GetCell(pos).y, radius) && (visited.find(checkVisited) == visited.end()))
+		if (CheckMaxBorder(q.front().y, GetCell(unit.position).y, Vision::Sector::distance) && !visited.contains(checkVisited))
 		{
-			//++count_visited;
 			visited.emplace(checkVisited, true);
 			q.push(checkVisited);
-			GetUnitsFromCell(result, checkVisited);
+			GetUnitIntersects(unit, checkVisited);
 		}
 		checkVisited = std::move(IVector2(q.front().x, q.front().y - 1));
-		if (CheckMinBorder(q.front().y, GetCell(pos).y, radius) && (visited.find(checkVisited) == visited.end()))
+		if (CheckMinBorder(q.front().y, GetCell(unit.position).y, Vision::Sector::distance) && !visited.contains(checkVisited))
 		{
-			//++count_visited;
 			visited.emplace(checkVisited, true);
 			q.push(checkVisited);
-			GetUnitsFromCell(result, checkVisited);
+			GetUnitIntersects(unit, checkVisited);
 		}
 		q.pop();
 	}
-	//std::cout << count_visited << std::endl;
 }
 
-void Grid::GetUnitsFromCell(std::vector<Unit*>& result,const IVector2& pos)
+void Grid::GetUnitIntersects(Unit& unitFirst, const IVector2& pos)
 {
-	auto cell = UnitsInSectors.equal_range(pos);
-
-	//size_t units_count = 0;
-
-	if (cell.first != UnitsInSectors.end())
+	if (UnitsInSectors.contains(pos))[[likely]]
 	{
-		for(auto unit = cell.first; unit != cell.second; ++unit)
-		result.push_back(unit->second);
-		//++units_count;
-	}	
-	//std::cout << sizeof(cell) * units_count << std::endl;
+		auto cell = UnitsInSectors.equal_range(pos);
+
+		for (auto& unit = cell.first; unit != cell.second; ++unit)
+		{
+			CheckIntersect(unitFirst, *unit->second);
+		}
+	}
+}
+
+void Grid::CheckIntersect(Unit& main, Unit& first)	const	//Отсекаем юнитов по полю зрения
+{
+	auto& vis = main.GetVision();
+	if (main.ID != first.ID)[[likely]]
+	{
+		Vector2 ownerToUnit1(first.position.x - main.position.x, first.position.y - main.position.y);
+		//float alpha = atan2(vis.r.x * ownerToUnit1.y - ownerToUnit1.x * vis.r.y, vis.r.x * ownerToUnit1.x + vis.r.x * ownerToUnit1.y);
+		float alpha = (vis.r * ownerToUnit1)/* / (vis.r.length * ownerToUnit1.length)*/;
+
+		if (alpha > Vision::Sector::angle * (ownerToUnit1.x * ownerToUnit1.x + ownerToUnit1.y * ownerToUnit1.y) * (vis.r.x * vis.r.x + vis.r.y * vis.r.y))
+		{
+			if (ownerToUnit1.Length() <= Vision::Sector::distance)
+				++vis.countVisibleAgents;
+		}
+		/*alpha = acos(alpha) * (unsigned int)180 / M_PI;
+
+		if ((alpha <= Vision::Sector::angle / 2) && ())
+			++vis.countVisibleAgents;*/
+	}
 }
 
 const bool Grid::CheckMaxBorder(const int& CheckPos, const int& UnitPos, const double& radius) const
 {
-	return ((CheckPos + 1)/* * sectorSize.x*/ <= ((UnitPos + radius) / sectorSize.x)) && ((CheckPos + 1) < (fieldSize.x / sectorSize.x));
+	return ((CheckPos + 1) <= (UnitPos + ceil(radius / sectorSize.x)) && ((CheckPos + 1) < (fieldSize.x / sectorSize.x)));
 }
 
 const bool Grid::CheckMinBorder(const int& CheckPos, const int& UnitPos, const double& radius) const
 {
-	return ((CheckPos - 1)/* * sectorSize.x*/ >= ((UnitPos - radius) / sectorSize.x)) && ((CheckPos - 1) >= 0);
+	return ((CheckPos - 1) >= (UnitPos - ceil(radius / sectorSize.x)) && ((CheckPos - 1) >= 0));
 }
- 
+
 void Grid::Search(Vector2& pos, Vector2& radius)
 {
 
@@ -121,5 +142,5 @@ void Grid::Update()
 
 const IVector2 Grid::GetCell(const Vector2& pos) const //Нормализуем координаты (x,y) э (-беск;+беск) в (x,y) э [0;+беск)
 {
-	return std::move(IVector2(floor((pos.x + fieldSize.x/2) / sectorSize.x), floor((pos.y + fieldSize.y/2) / sectorSize.y)));
+	return std::move(IVector2(floor((pos.x + fieldSize.x / 2) / sectorSize.x), floor((pos.y + fieldSize.y / 2) / sectorSize.y)));
 }

@@ -33,12 +33,12 @@ void ThreadPool::start(Vision& vision)
 	--thread_count;
 	if (!threads[i % (max_thread_count - 1)])
 	{
-		threads[i % (max_thread_count - 1)] = std::move(std::make_shared<std::thread>(&Vision::Update, std::move(vision)));
+		//threads[i % (max_thread_count - 1)] = std::move(std::make_shared<std::thread>(&Vision::Update, std::move(vision)));
 	}
 	else
 	{
-		threads[i % (max_thread_count - 1)]->join();
-		threads[i % (max_thread_count - 1)] = std::move(std::make_shared<std::thread>(&Vision::Update, std::move(vision)));
+		/*threads[i % (max_thread_count - 1)]->join();
+		threads[i % (max_thread_count - 1)] = std::move(std::make_shared<std::thread>(&Vision::Update, std::move(vision)));*/
 	}
 	++thread_count;
 	++i;

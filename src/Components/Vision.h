@@ -37,11 +37,11 @@ struct Vision
 		static float distance;
 	};
 
-	void Update();
+	//void Update();
 
-	void CheckIntersects();
+	//void CheckIntersects();
 
-	void CheckIntersect(Unit& unit);
+	//void CheckIntersect(Unit& unit);
 
 	Vector2 r;
 	size_t countVisibleAgents;

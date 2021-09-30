@@ -1,54 +1,58 @@
 {
-	   "fieldSize":[
-      10.0,
-      10.0
-   ],
-   "sectorSize":[
-      2.0,
-      2.0
-   ],
-	"angle" : 135.5,
-	"distance" : 2.0,
-	"Units" :
-	[
+	"fieldSize": [
+		10.0,
+		10.0
+	],
+	"sectorSize": [
+		2.0,
+		2.0
+	],
+	"angle": 135.5,
+	"distance": 2.0,
+	"Units": [
 		{
-			"name" : "unit1",
-			"position" : 
-			[
+			"name": "unit1",
+			"position": [
 				1.0,
 				1.0
 			],
-			"r" :
-			[
+			"r": [
 				0.0,
 				1.0
 			]
 		},
 		{
-			"name" : "unit2",
-			"position" : 
-			[
+			"name": "unit2",
+			"position": [
 				1.0,
 				2.0
 			],
-			"r" :
-			[
+			"r": [
 				1.0,
 				0.0
 			]
 		},
 		{
-			"name" : "unit3",
-			"position" : 
-			[
+			"name": "unit3",
+			"position": [
 				1.0,
-				-1.5
+				2.0
 			],
-			"r" :
-			[
+			"r": [
 				0.707,
 				0.707
 			]
-		}		
+		},
+		{
+			"name": "unit4",
+			"position": [
+				1.0,
+				1.5
+			],
+			"r": [
+				0.707,
+				0.707
+			]
+		}
 	]
 }

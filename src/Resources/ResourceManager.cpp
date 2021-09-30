@@ -24,7 +24,7 @@ void ResourceManager::loadJSONUnits(const std::string& relativePath)
 	rapidjson::Document d = documentParse(relativePath);
 
 	Grid::GetInstance(std::move(loadJSONVector2(d, "fieldSize")), std::move(loadJSONVector2(d, "sectorSize")));
-	Vision::Sector::angle = d.FindMember("angle")->value.GetDouble();
+	Vision::Sector::angle = (1 + cos(d.FindMember("angle")->value.GetDouble())) / 2;
 	Vision::Sector::distance = d.FindMember("distance")->value.GetDouble();
 
 	for (const auto& unit : d.FindMember("Units")->value.GetArray())

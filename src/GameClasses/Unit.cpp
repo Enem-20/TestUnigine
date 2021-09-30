@@ -24,12 +24,13 @@ Unit::Unit(std::string name, Vector2 position, Vector2 r)
 	: position(std::move(position))
 	, name(name)
 {
-	if (this->name == "") { this->name = "unit" + std::to_string(count); }
+	if (this->name == "") /*[[likely]]*/{ this->name = "unit" + std::to_string(count); }
 	ID = count;
 	vision = std::make_shared<Vision>(std::make_shared<Unit>(*this), std::move(r));	
 	
-	ResourceManager::Units.emplace("unit" + std::to_string(count), std::make_shared<Unit>(*this));
-	Grid::GetInstance().AddUnit(*this);
+	auto _This = std::make_shared<Unit>(*this);
+	ResourceManager::Units.emplace("unit" + std::to_string(count), _This);
+	Grid::GetInstance().AddUnit(*_This);
 
 
 	++count;

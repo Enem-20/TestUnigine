@@ -29,12 +29,13 @@ public:
 
 	static Grid& GetInstance(Vector2 SectorSize = 0, Vector2 fieldSize = 0);
 	void AddUnit(Unit& unit);
-	void GetUnits(const Vector2& pos, const double& radius, std::vector<Unit*>& result, std::unordered_map<IVector2, bool, IVector2Hash>& visited, std::queue<IVector2>& q, IVector2& checkVisited);
+	void GetFromRadius(Unit& unit, IVector2& checkVisited, std::queue<IVector2, std::list<IVector2>>& q, std::unordered_map<IVector2, bool, IVector2Hash>& visited);
 	void Update();
 	const bool CheckMaxBorder(const int& CheckPos, const int& UnitPos, const double& radius) const;
 	const bool CheckMinBorder(const int& CheckPos, const int& UnitPos, const double& radius) const;
 	const IVector2 GetCell(const Vector2& pos) const;
-	void GetUnitsFromCell(std::vector<Unit*>& result, const IVector2& pos);
+	void GetUnitIntersects(Unit& unitFirst, const IVector2& pos);
+	void CheckIntersect(Unit& main, Unit& first) const;
 
 	~Grid();
 
@@ -44,4 +45,5 @@ public:
 private:
 	void Search(Vector2& pos, Vector2& radius);
 	Grid(Vector2& fieldSize, Vector2& sectorSize);
+	size_t blockSize = 65536;
 };
