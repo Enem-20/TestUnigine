@@ -8,7 +8,18 @@
 #include <span>
 #include <chrono>
 #include <ppl.h>
-#include <intrin.h>
+//#include <omp.h>
+//#include <intrin.h>
+
+const int& myfloorF(const float& some)
+{
+	return int(some < 0 ? some - !!(some - int(some)) : some);
+}
+
+const int& myCeil(const float& some)
+{
+	return (some <= 0.0 ? (int)some : some > (int) some ? (int)some + 1 : (int)some);
+}
 
 Grid::Grid(Vector2& fieldSize, Vector2& sectorSize)
 {
@@ -40,7 +51,7 @@ void Grid::AddUnit(Unit& unit)
 	UnitsInSectors.emplace(std::move(cellPos), &unit);
 }
 
-void Grid::GetFromRadius(Unit& unit, IVector2& checkVisited, std::queue<IVector2, std::list<IVector2>>& q, std::unordered_map<IVector2, bool, IVector2Hash>& visited)
+void Grid::GetFromRadius(Unit& unit, IVector2& checkVisited, std::queue<IVector2>& q, std::unordered_map<IVector2, bool, IVector2Hash>& visited)
 {
 	//visited.clear();
 	q.push(GetCell(unit.position));
@@ -81,20 +92,49 @@ void Grid::GetFromRadius(Unit& unit, IVector2& checkVisited, std::queue<IVector2
 	}
 }
 
-void Grid::GetUnitIntersects(Unit& unitFirst, const IVector2& pos)
+inline void Grid::GetUnitIntersects(Unit& unitFirst, const IVector2& pos)
 {
-	if (UnitsInSectors.contains(pos))[[likely]]
+	if (UnitsInSectors.contains(pos)) [[likely]]
 	{
-		auto cell = UnitsInSectors.equal_range(pos);
-
-		for (auto& unit = cell.first; unit != cell.second; ++unit)
+		auto cellNumber = UnitsInSectors.bucket(pos);
+		//register auto cellIter = UnitsInSectors.equal_range(pos);
+		size_t size = UnitsInSectors.bucket_size(cellNumber);
+		std::unordered_multimap<IVector2, Unit*, IVector2Hash>::iterator starter = UnitsInSectors.begin(cellNumber);
+		size_t i = 0;			
+		auto& vis = unitFirst.GetVision();
+		//auto it = cellIter.first;
+		auto it = UnitsInSectors.begin(cellNumber);
+#pragma vector always
+		if (it != UnitsInSectors.end())
 		{
-			CheckIntersect(unitFirst, *unit->second);
+			for (i; i < size; ++i)
+			{
+				//CheckIntersect(unitFirst, *it->second);
+
+				if (unitFirst.ID != it->second->ID) [[likely]]
+				{
+					Vector2 ownerToUnit1(it->second->position.x - unitFirst.position.x, it->second->position.y - unitFirst.position.y);
+				////float alpha = atan2(vis.r.x * ownerToUnit1.y - ownerToUnit1.x * vis.r.y, vis.r.x * ownerToUnit1.x + vis.r.x * ownerToUnit1.y);
+				float alpha = (vis.r * ownerToUnit1)/* / (vis.r.length * ownerToUnit1.length)*/;
+
+				if (alpha > Vision::Sector::angle * (ownerToUnit1.x * ownerToUnit1.x + ownerToUnit1.y * ownerToUnit1.y) * (vis.r.x * vis.r.x + vis.r.y * vis.r.y))
+				{
+					if (ownerToUnit1.Length() <= Vision::Sector::distance)
+						++vis.countVisibleAgents;
+				}
+				///*alpha = acos(alpha) * (unsigned int)180 / M_PI;
+
+				//if ((alpha <= Vision::Sector::angle / 2) && ())
+				//	++vis.countVisibleAgents;*/
+				//}
+				++it;
+				}
+			}
 		}
 	}
 }
 
-void Grid::CheckIntersect(Unit& main, Unit& first)	const	//Отсекаем юнитов по полю зрения
+inline void Grid::CheckIntersect(Unit& main, Unit& first)	const	//Отсекаем юнитов по полю зрения
 {
 	auto& vis = main.GetVision();
 	if (main.ID != first.ID)[[likely]]
@@ -117,12 +157,12 @@ void Grid::CheckIntersect(Unit& main, Unit& first)	const	//Отсекаем юнитов по по
 
 const bool Grid::CheckMaxBorder(const int& CheckPos, const int& UnitPos, const double& radius) const
 {
-	return ((CheckPos + 1) <= (UnitPos + ceil(radius / sectorSize.x)) && ((CheckPos + 1) < (fieldSize.x / sectorSize.x)));
+	return ((CheckPos + 1) <= (UnitPos + myCeil(radius / sectorSize.x)) && ((CheckPos + 1) < (fieldSize.x / sectorSize.x)));
 }
 
 const bool Grid::CheckMinBorder(const int& CheckPos, const int& UnitPos, const double& radius) const
 {
-	return ((CheckPos - 1) >= (UnitPos - ceil(radius / sectorSize.x)) && ((CheckPos - 1) >= 0));
+	return ((CheckPos - 1) >= (UnitPos - myCeil(radius / sectorSize.x)) && ((CheckPos - 1) >= 0));
 }
 
 void Grid::Search(Vector2& pos, Vector2& radius)
@@ -142,5 +182,5 @@ void Grid::Update()
 
 const IVector2 Grid::GetCell(const Vector2& pos) const //Нормализуем координаты (x,y) э (-беск;+беск) в (x,y) э [0;+беск)
 {
-	return std::move(IVector2(floor((pos.x + fieldSize.x / 2) / sectorSize.x), floor((pos.y + fieldSize.y / 2) / sectorSize.y)));
+	return std::move(IVector2(myfloorF((pos.x + fieldSize.x / 2) / sectorSize.x), myfloorF((pos.y + fieldSize.y / 2) / sectorSize.y)));
 }

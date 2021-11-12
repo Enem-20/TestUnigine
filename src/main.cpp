@@ -27,22 +27,43 @@
 #ifdef RandomTest
 void Randomize()
 {
+	int size = 10000;
+	size_t cellSize = size / 10;
+
 	srand(time(NULL));
 	Vision::Sector::angle = (1 + cos(/*rand() % 360 + 1*/135.5)) / 2;
-	Vision::Sector::distance = 1000/*rand() % 10000 + 1*/;	//for max performance Vision::Sector::distance <= grid.sectorSize.x
+	Vision::Sector::distance = cellSize/*rand() % 10000 + 1*/;	//for max performance Vision::Sector::distance <= grid.sectorSize.x
 
-	Grid::GetInstance(std::move(Vector2(10000.f, 10000.f)), std::move(Vector2(1000.f, 1000.f)));
-	for (size_t i = 0; i < 10000; ++i)
+	Grid::GetInstance(std::move(Vector2(size, size)), std::move(Vector2(cellSize, cellSize)));
+
+	//concurrency::parallel_for(0, size, [&](int i)
+	//	{
+	//		bool sign1 = rand() % 2;
+	//		bool sign2 = rand() % 2;
+	//		double posX = sign1 ? rand() % size * -1 : rand() % size;
+	//		double posY = sign2 ? rand() % size * -1 : rand() % size;
+	//		Vector2 position(std::move(posX), std::move(posY));
+	//		bool sign3 = rand() % 2;
+	//		bool sign4 = rand() % 2;
+	//		double posX2 = sign3 ? rand() % size * -1 : rand() % size;
+	//		double posY2 = sign4 ? rand() % size * -1 : rand() % size;
+	//		Vector2 r(std::move(posX2), std::move(posY2));
+
+	//		Unit("", std::move(position), std::move(r));
+	//	});
+
+#pragma omp simd
+	for (size_t i = 0; i < size; ++i)
 	{
 		bool sign1 = rand() % 2;
 		bool sign2 = rand() % 2;
-		double posX = sign1 ? rand() % 10000 * -1 : rand() % 10000;
-		double posY = sign2 ? rand() % 10000 * -1 : rand() % 10000;
+		double posX = sign1 ? rand() % size * -1 : rand() % size;
+		double posY = sign2 ? rand() % size * -1 : rand() % size;
 		Vector2 position(std::move(posX), std::move(posY));
 		bool sign3 = rand() % 2;
 		bool sign4 = rand() % 2;
-		double posX2 = sign3 ? rand() % 10000 * -1 : rand() % 10000;
-		double posY2 = sign4 ? rand() % 10000 * -1 : rand() % 10000;
+		double posX2 = sign3 ? rand() % size * -1 : rand() % size;
+		double posY2 = sign4 ? rand() % size * -1 : rand() % size;
 		Vector2 r(std::move(posX2), std::move(posY2));
 
 		Unit("", std::move(position), std::move(r));
@@ -65,10 +86,10 @@ int main(int argc, char** argv)
 
 	ResourceManager::init();
 
-	auto grid = Grid::GetInstance();
-	IVector2 checkVisited;
-	std::queue<IVector2, std::list<IVector2>> q;
-	std::unordered_map<IVector2, bool, IVector2Hash> visited;
+	auto& grid = Grid::GetInstance();
+	//IVector2 checkVisited;
+	//std::queue<IVector2, std::vector<IVector2>> q;
+	//std::unordered_map<IVector2, bool, IVector2Hash> visited1;
 	//std::cout << sizeof(q) << " " << sizeof(visited) /*+ sizeof(checkVisited)*/ << std::endl;
 	auto start = std::chrono::high_resolution_clock::now();
 
@@ -76,9 +97,10 @@ int main(int argc, char** argv)
 		[&](auto& unit)
 		{
 			IVector2 checkVisited;
-			std::queue<IVector2, std::list<IVector2>> q;
+			std::queue<IVector2> q;
 			std::unordered_map<IVector2, bool, IVector2Hash> visited;
 			grid.GetFromRadius(*unit.second, checkVisited, q, visited);
+			//std::cout << unit.second->GetVision().countVisibleAgents << '\n';
 		});
 
 	//for (auto& unit : ResourceManager::Units)
@@ -95,9 +117,7 @@ int main(int argc, char** argv)
 	std::cout << "angle: " << Vision::Sector::angle << std::endl;
 #endif //  DEBUG
 
-
-
-	ResourceManager::UnloadAllResources();
 	system("pause");
+	ResourceManager::UnloadAllResources();
 	return 0;
 }

@@ -35,6 +35,11 @@ public:
 		return (a.x == b.x) && (a.y == b.y);
 	}
 
+	friend IVector2&& operator-(const IVector2& v1, const IVector2& v2)
+	{
+		return IVector2(v1.x - v2.x, v1.y - v2.y);
+	}
+
 	//char m;
 	int length;
 	int x, y;

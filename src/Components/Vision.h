@@ -13,6 +13,8 @@ struct Vision
 {
 	Vision(std::shared_ptr<Unit> owner, Vector2 r = 0.f);
 
+	Vision() = default;
+
 	Vision(Vision&& vision) noexcept
 		: r(std::move(vision.r))
 		, countVisibleAgents(std::move(vision.countVisibleAgents))
@@ -24,6 +26,13 @@ struct Vision
 		, countVisibleAgents(vision.countVisibleAgents)
 		, owner(vision.owner)
 	{}
+
+	void operator=(Vision&& vis)
+	{
+		this->r = std::move(vis.r);
+		this->countVisibleAgents = std::move(vis.countVisibleAgents);
+		this->owner = std::move(vis.owner);
+	}
 
 	struct Sector
 	{
@@ -44,13 +53,15 @@ struct Vision
 	//void CheckIntersect(Unit& unit);
 
 	Vector2 r;
-	size_t countVisibleAgents;
 	std::shared_ptr<Unit> owner;
 
 	const size_t GetL1BlockSize() const;
+	
+	size_t countVisibleAgents;
 private:
-	void CalcL1BlockSize();
 	size_t L1BlockSize;
 	const size_t L1CacheSize = 389120;//in bytes. now size for pentium 4
 	std::vector<Unit*> result;
+	
+	void CalcL1BlockSize();
 };

@@ -47,5 +47,5 @@ bool IVector2::operator==(const IVector2& v)
 
 void IVector2::Length()
 {
-	length = sqrt(x * x + y * y);
+	length = static_cast<int>(sqrt(x * x + y * y));
 }

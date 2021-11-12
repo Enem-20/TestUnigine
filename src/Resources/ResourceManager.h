@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <map>
 
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
@@ -30,7 +31,7 @@ public:
 	static Vector2 loadJSONVector2(const rapidjson::Document& val, std::string name);
 	static std::shared_ptr<Unit> getUnit(const std::string& name);
 
-	typedef std::unordered_map<std::string, std::shared_ptr<Unit>> UnitsPool;
+	typedef std::map<std::string, std::shared_ptr<Unit>> UnitsPool;
 	static UnitsPool Units;
 
 	static const size_t GetL1BlockSize();

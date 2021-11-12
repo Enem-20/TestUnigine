@@ -1,5 +1,4 @@
 #include "Unit.h"
-#include "../Components/Vision.h"
 
 #include "../Helpers/Grid.h"
 
@@ -26,7 +25,7 @@ Unit::Unit(std::string name, Vector2 position, Vector2 r)
 {
 	if (this->name == "") /*[[likely]]*/{ this->name = "unit" + std::to_string(count); }
 	ID = count;
-	vision = std::make_shared<Vision>(std::make_shared<Unit>(*this), std::move(r));	
+	vision = std::move(Vision(std::make_shared<Unit>(*this), std::move(r)));	
 	
 	auto _This = std::make_shared<Unit>(*this);
 	ResourceManager::Units.emplace("unit" + std::to_string(count), _This);
@@ -38,7 +37,7 @@ Unit::Unit(std::string name, Vector2 position, Vector2 r)
 
 Vision& Unit::GetVision()
 {
-	return *vision;
+	return vision;
 }
 
 const IVector2& Unit::GetCellPosition()
